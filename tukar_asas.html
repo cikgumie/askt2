@@ -97,7 +97,7 @@
         }
 
         .division-table .remainder {
-            color: #d63384;
+            color: #b71c1c;
             font-weight: 500;
         }
 
@@ -155,11 +155,11 @@
                         <h3 class="card-title mb-0 text-center">Kalkulator Nombor Asas</h3>
                     </div>
                     <div class="card-body">
-                        <form id="converterForm" onsubmit="return false;">
+                        <form id="converterForm" onsubmit="return false;" aria-labelledby="form-title">
                             <div class="row mb-3">
                                 <div class="col-md-3 mb-3 mb-md-0">
                                     <label for="fromBase" class="form-label">Dari Asas:</label>
-                                    <select class="form-select" id="fromBase">
+                                    <select class="form-select" id="fromBase" aria-label="Pilih asas asal">
                                         <option value="2">Binari (2)</option>
                                         <option value="8">Oktal (8)</option>
                                         <option value="10" selected>Perpuluhan (10)</option>
@@ -168,7 +168,7 @@
                                 </div>
                                 <div class="col-md-3">
                                     <label for="toBase" class="form-label">Ke Asas:</label>
-                                    <select class="form-select" id="toBase">
+                                    <select class="form-select" id="toBase" aria-label="Pilih asas tujuan">
                                         <option value="2" selected>Binari (2)</option>
                                         <option value="8">Oktal (8)</option>
                                         <option value="10">Perpuluhan (10)</option>
@@ -177,20 +177,20 @@
                                 </div>
                                 <div class="col-md-6 mb-3 mb-md-0">
                                     <label for="inputNumber" class="form-label">Masukkan Nombor:</label>
-                                    <input type="text" class="form-control" id="inputNumber" 
+                                    <input type="text" class="form-control" id="inputNumber" aria-label="Masukkan nombor untuk ditukar" 
                                            placeholder="Masukkan nombor (maksimum 7 digit)" maxlength="7">
                                 </div>
                             </div>
-                            <button type="button" class="btn btn-primary mb-3" style="width: auto; padding: 8px 16px;" onclick="convertNumber()">
+                            <button type="button" class="btn btn-primary mb-3" style="width: auto; padding: 8px 16px;" onclick="convertNumber()" aria-label="Tukar nombor dan tunjukkan langkah">
                                 Tukar & Tunjukkan Langkah
                             </button>
 
                             <div class="result mb-3">
                                 <label for="result" class="form-label">Hasil:</label>
-                                <input type="text" class="form-control" id="result" readonly>
+                                <input type="text" class="form-control" id="result" aria-live="polite" readonly>
                             </div>
 
-                            <div id="simulationSteps" style="max-width: 600px; margin: 0 auto;"></div>
+                            <div id="simulationSteps" style="max-width: 600px; margin: 0 auto;" aria-live="polite"></div>
                         </form>
                     </div>
                 </div>
@@ -204,7 +204,7 @@
             const numDigits = digits.length;
             
             let html = '<div class="table-container">';
-            html += '<table class="place-value-table">';
+            html += '<table class="place-value-table" role="table" aria-label="Jadual nilai tempat">';
             
             html += '<tr><th>Kedudukan</th>';
             for (let i = numDigits - 1; i >= 0; i--) {
@@ -252,7 +252,7 @@
         function createDivisionSteps(steps, toBase) {
             let html = `
             <div class="table-container">
-                <table class="division-table">
+                <table class="division-table" role="table" aria-label="Jadual langkah pembahagian">
                     <tbody>
             `;
             
@@ -348,6 +348,14 @@
                     }
                     addStep(`<h5 class="text-center mb-3">Langkah 2: Tukar ${decimal} kepada Asas-${toBase}</h5>`);
                     
+                    if (fromBase === 2 && toBase === 8) {
+                        // Binary to Octal direct step-by-step explanation
+                        addStep(`<p class="text-center mb-3">Langkah alternatif: Mengelompokkan setiap 3 bit dari kanan untuk menukar ke oktal.</p>`);
+                        let groups = input.match(/.{1,3}(?=(.{3})*$)/g); // Groups of 3 from right to left
+                        groups = groups.map(group => parseInt(group, 2).toString(8));
+                        addStep(`<p class="text-center mb-0">Hasil daripada pengelompokan: ${groups.join(' ')}</p>`);
+                    }
+
                     let quotient = decimal;
                     let remainders = [];
                     let steps = [];
