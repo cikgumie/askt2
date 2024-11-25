@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator Asas</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .calculator-container {
+            min-height: 100vh;
+            padding: 20px;
+            background-color: #f0f2f5;
+        }
+
+        .step-card {
+            border-left: 4px solid #007bff;
+            margin-bottom: 15px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 4px;
+        }
+
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            margin: 15px 0;
+            background: white;
+            border-radius: 4px;
+            padding: 10px;
+            box-shadow: 0 0 0 1px #dee2e6;
+        }
+
+        .place-value-table {
+            margin: 0 auto;
+            border-collapse: collapse;
+            width: auto;
+        }
+
+        .place-value-table th, 
+        .place-value-table td {
+            padding: 8px 12px;
+            text-align: center;
+            border: 1px solid #dee2e6;
+            min-width: 50px;
+            background-color: white;
+        }
+
+        .place-value-table th {
+            background-color: #e7f1ff;
+            white-space: nowrap;
+            font-weight: 500;
+        }
+
+        .sum-equation {
+            font-family: monospace;
+            white-space: pre-wrap;
+            background-color: white;
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin: 15px auto;
+            width: fit-content;
+            text-align: right;
+            border: 1px solid #dee2e6;
+        }
+
+        .division-table {
+            margin: 0 auto;
+            border-collapse: separate;
+            border-spacing: 8px 4px;
+            max-width: 400px;
+        }
+
+        .division-table td {
+            padding: 4px 8px;
+            text-align: center;
+            white-space: nowrap;
+            font-family: monospace;
+            font-size: 1.1em;
+        }
+
+        .division-table .remainder {
+            color: #d63384;
+            font-weight: 500;
+        }
+
+        .highlight {
+            background-color: #e7f1ff;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .table-container {
+                padding: 5px;
+            }
+
+            .place-value-table th, 
+            .place-value-table td {
+                padding: 6px 8px;
+                font-size: 0.9rem;
+            }
+
+            .division-table {
+                border-spacing: 4px 2px;
+            }
+            
+            .division-table td {
+                padding: 2px 4px;
+                font-size: 0.9rem;
+            }
+
+            .sum-equation {
+                font-size: 0.9rem;
+                padding: 8px 12px;
+            }
+        }
+    </style>
+</head>
+<body class="calculator-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-10 col-lg-8">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white py-3">
+                        <h3 class="card-title mb-0 text-center">Kalkulator Nombor Asas</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="converterForm" onsubmit="return false;">
+                            <div class="row mb-3">
+                                <div class="col-md-3 mb-3 mb-md-0">
+                                    <label for="fromBase" class="form-label">Dari Asas:</label>
+                                    <select class="form-select" id="fromBase">
+                                        <option value="2">Binari (2)</option>
+                                        <option value="8">Oktal (8)</option>
+                                        <option value="10" selected>Perpuluhan (10)</option>
+                                        <option value="16">Heksadesimal (16)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="toBase" class="form-label">Ke Asas:</label>
+                                    <select class="form-select" id="toBase">
+                                        <option value="2" selected>Binari (2)</option>
+                                        <option value="8">Oktal (8)</option>
+                                        <option value="10">Perpuluhan (10)</option>
+                                        <option value="16">Heksadesimal (16)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3 mb-md-0">
+                                    <label for="inputNumber" class="form-label">Masukkan Nombor:</label>
+                                    <input type="text" class="form-control" id="inputNumber" 
+                                           placeholder="Masukkan nombor (maksimum 7 digit)" maxlength="7">
+                                </div>
+                                </div>
+                            </div>
+
+                            <button type="button" class="btn btn-primary w-100 mb-3" onclick="convertNumber()">
+                                Tukar & Tunjukkan Langkah
+                            </button>
+
+                            <div class="result mb-3">
+                                <label for="result" class="form-label">Hasil:</label>
+                                <input type="text" class="form-control" id="result" readonly>
+                            </div>
+
+                            <div id="simulationSteps"></div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function createPlaceValueTable(number, base) {
+            const digits = number.split('');
+            const numDigits = digits.length;
+            
+            let html = '<div class="table-container">';
+            html += '<table class="place-value-table">';
+            
+            html += '<tr><th>Kedudukan</th>';
+            for (let i = numDigits - 1; i >= 0; i--) {
+                html += `<th>${base}<sup>${i}</sup></th>`;
+            }
+            html += '</tr>';
+            
+            html += '<tr><td>Digit</td>';
+            for (let i = 0; i < numDigits; i++) {
+                html += `<td>${digits[i]}</td>`;
+            }
+            html += '</tr>';
+            
+            html += '<tr><td>Nilai</td>';
+            for (let i = 0; i < numDigits; i++) {
+                const value = parseInt(digits[i], base) ^ Math.pow(base, numDigits - 1 - i);
+                html += `<td>${value}</td>`;
+            }
+            html += '</tr>';
+            
+            html += '</table></div>';
+            return html;
+        }
+
+        function createSumEquation(number, base) {
+            const digits = number.split('');
+            const numDigits = digits.length;
+            const terms = digits.map((digit, i) => {
+                const power = numDigits - 1 - i;
+                return `${digit} × ${base}^${power}`;
+            });
+
+            let equation = "Jumlah = ";
+            if (terms.length <= 4) {
+                equation += terms.join(" + ");
+            } else {
+                const firstLine = terms.slice(0, Math.ceil(terms.length/2)).join(" + ");
+                const secondLine = terms.slice(Math.ceil(terms.length/2)).join(" + ");
+                equation += firstLine + " +\n    " + secondLine;
+            }
+            
+            return equation;
+        }
+
+        function createDivisionSteps(steps, toBase) {
+            let html = `
+            <div class="table-container">
+                <table class="division-table">
+                    <tbody>
+            `;
+            
+            steps.forEach((step) => {
+                html += `
+                    <tr>
+                        <td>${step.quotient}</td>
+                        <td>÷</td>
+                        <td>${toBase}</td>
+                        <td>=</td>
+                        <td>${step.nextQuotient}</td>
+                        <td>baki</td>
+                        <td class="remainder">${step.remainder}</td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    </tbody>
+                </table>
+            </div>
+            `;
+            return html;
+        }
+
+        function addStep(content) {
+            const stepsDiv = document.getElementById('simulationSteps');
+            const stepElement = document.createElement('div');
+            stepElement.className = 'step-card';
+            stepElement.innerHTML = content;
+            stepsDiv.appendChild(stepElement);
+        }
+
+        function validateInput(input, fromBase) {
+            const basePatterns = {
+                2: /^[0-1]+$/,
+                8: /^[0-7]+$/,
+                10: /^[0-9]+$/,
+                16: /^[0-9A-F]+$/i
+            };
+
+            if (!basePatterns[fromBase].test(input)) {
+                throw new Error(`Aksara tidak sah untuk asas ${fromBase}`);
+            }
+        }
+
+        function convertNumber() {
+            const input = document.getElementById('inputNumber').value.trim().toUpperCase();
+            const fromBase = parseInt(document.getElementById('fromBase').value);
+            const toBase = parseInt(document.getElementById('toBase').value);
+            document.getElementById('simulationSteps').innerHTML = '';
+            
+            try {
+                if (!input) {
+                    throw new Error('Sila masukkan nombor');
+                }
+
+                validateInput(input, fromBase);
+
+                addStep(`
+                    <h5 class="text-center mb-3">Menukar <span class="highlight">${input}</span> 
+                    daripada Asas-${fromBase} kepada Asas-${toBase}</h5>
+                `);
+
+                let decimal;
+                if (fromBase !== 10) {
+                    addStep(`
+                        <h5 class="text-center mb-3">Langkah 1: Tukar kepada Perpuluhan</h5>
+                        <p class="text-center mb-3">Pecahkan nombor menggunakan nilai tempat:</p>
+                        ${createPlaceValueTable(input, fromBase)}
+                        <pre class="sum-equation text-center">${createSumEquation(input, fromBase)}</pre>
+                    `);
+
+                    decimal = parseInt(input, fromBase);
+                    addStep(`
+                        <p class="text-center mb-0">Nilai perpuluhan = <span class="highlight">${decimal}</span></p>
+                    `);
+                } else {
+                    decimal = parseInt(input);
+                    addStep(`<p class="text-center mb-0">Nombor sudah dalam perpuluhan: 
+                            <span class="highlight">${decimal}</span></p>`);
+                }
+
+                if (toBase !== 10) {
+                    addStep(`<h5 class="text-center mb-3">Langkah 2: Tukar ${decimal} kepada Asas-${toBase}</h5>`);
+                    
+                    let quotient = decimal;
+                    let remainders = [];
+                    let steps = [];
+
+                    while (quotient > 0) {
+                        const remainder = quotient % toBase;
+                        remainders.unshift(remainder < 10 ? remainder : String.fromCharCode(55 + remainder));
+                        steps.push({
+                            quotient,
+                            remainder,
+                            nextQuotient: Math.floor(quotient / toBase)
+                        });
+                        quotient = Math.floor(quotient / toBase);
+                    }
+
+                    addStep(createDivisionSteps(steps, toBase));
+
+                    const result = remainders.join('');
+                    addStep(`
+                        <p class="text-center mb-2">Membaca baki dari bawah ke atas:</p>
+                        <p class="text-center mb-0">Hasil = <span class="highlight">${result}</span> 
+                        (Asas-${toBase})</p>
+                    `);
+                    document.getElementById('result').value = result;
+                } else {
+                    document.getElementById('result').value = decimal.toString();
+                    addStep(`<p class="text-center mb-0">Hasil akhir = 
+                            <span class="highlight">${decimal}</span> (Asas-${toBase})</p>`);
+                }
+
+            } catch (error) {
+                alert('Ralat: ' + error.message);
+                document.getElementById('result').value = 'Ralat';
+            }
+        }
+
+        // Event Listeners
+        document.getElementById('inputNumber').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                convertNumber();
+            }
+        });
+
+        document.getElementById('fromBase').addEventListener('change', function() {
+            const input = document.getElementById('inputNumber');
+            input.value = '';
+            document.getElementById('result').value = '';
+            document.getElementById('simulationSteps').innerHTML = '';
+        });
+    </script>
+
+    <footer class="text-center mt-4">
+        <small>Dibuat oleh <strong>CikguMie</strong></small>
+    </footer>
+
+</html>
