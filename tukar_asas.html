@@ -8,29 +8,35 @@
     <style>
         .calculator-container {
             min-height: 100vh;
-            padding: 10px; /* Reduced padding */
-            background-color: #f0f2f5;
+            padding: 10px;
+            background: linear-gradient(135deg, #e0f7fa, #80deea);
             display: flex;
             justify-content: center;
             align-items: center;
         }
 
+        .card {
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
         .step-card {
             border-left: 4px solid #007bff;
-            margin-bottom: 10px; /* Reduced margin */
-            background-color: #fff;
-            padding: 10px; /* Reduced padding */
+            margin-bottom: 10px;
+            background-color: #ffffff;
+            padding: 10px;
             border-radius: 4px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
         .table-container {
             width: 100%;
             overflow-x: auto;
-            margin: 10px 0; /* Reduced margin */
-            background: white;
+            margin: 10px 0;
+            background: #ffffff;
             border-radius: 4px;
-            padding: 8px; /* Reduced padding */
-            box-shadow: 0 0 0 1px #dee2e6;
+            padding: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
         .place-value-table {
@@ -41,44 +47,53 @@
 
         .place-value-table th, 
         .place-value-table td {
-            padding: 6px 10px; /* Reduced padding */
+            padding: 6px 10px;
             text-align: center;
             border: 1px solid #dee2e6;
             min-width: 50px;
-            background-color: white;
         }
 
         .place-value-table th {
-            background-color: #e7f1ff;
+            background-color: #007bff;
+            color: #ffffff;
             white-space: nowrap;
             font-weight: 500;
+        }
+
+        .place-value-table td:nth-child(odd) {
+            background-color: #e3f2fd;
+        }
+
+        .place-value-table td:nth-child(even) {
+            background-color: #bbdefb;
         }
 
         .sum-equation {
             font-family: monospace;
             white-space: pre-wrap;
-            background-color: white;
-            padding: 8px 12px; /* Reduced padding */
+            background-color: #f9fbe7;
+            padding: 8px 12px;
             border-radius: 4px;
-            margin: 10px auto; /* Reduced margin */
+            margin: 10px auto;
             width: fit-content;
             text-align: right;
-            border: 1px solid #dee2e6;
+            border: 1px solid #c8e6c9;
+            color: #388e3c;
         }
 
         .division-table {
             margin: 0 auto;
             border-collapse: separate;
-            border-spacing: 6px 3px; /* Reduced spacing */
+            border-spacing: 6px 3px;
             max-width: 400px;
         }
 
         .division-table td {
-            padding: 3px 6px; /* Reduced padding */
+            padding: 3px 6px;
             text-align: center;
             white-space: nowrap;
             font-family: monospace;
-            font-size: 1em; /* Reduced font size slightly */
+            font-size: 1em;
         }
 
         .division-table .remainder {
@@ -87,10 +102,21 @@
         }
 
         .highlight {
-            background-color: #e7f1ff;
-            padding: 2px 4px; /* Reduced padding */
+            background-color: #ffeb3b;
+            color: #000;
+            padding: 2px 4px;
             border-radius: 3px;
-            font-weight: 500;
+            font-weight: 700;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #007bff, #40c4ff);
+            color: #ffffff;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #42a5f5, #1e88e5);
+            border: none;
         }
 
         @media (max-width: 768px) {
@@ -100,8 +126,8 @@
 
             .place-value-table th, 
             .place-value-table td {
-                padding: 4px 6px; /* Reduced padding */
-                font-size: 0.85rem; /* Adjusted font size for mobile */
+                padding: 4px 6px;
+                font-size: 0.85rem;
             }
 
             .division-table {
@@ -109,13 +135,13 @@
             }
             
             .division-table td {
-                padding: 2px 4px; /* Reduced padding */
+                padding: 2px 4px;
                 font-size: 0.85rem;
             }
 
             .sum-equation {
                 font-size: 0.85rem;
-                padding: 6px 10px; /* Reduced padding */
+                padding: 6px 10px;
             }
         }
     </style>
@@ -271,6 +297,10 @@
             if (!basePatterns[fromBase].test(input)) {
                 throw new Error(`Aksara tidak sah untuk asas ${fromBase}`);
             }
+
+            if (input.length > 7) {
+                throw new Error('Panjang nombor melebihi 7 digit');
+            }
         }
 
         function convertNumber() {
@@ -311,6 +341,11 @@
                 }
 
                 if (toBase !== 10) {
+                    if (decimal === 0) {
+                        document.getElementById('result').value = "0";
+                        addStep(`<p class="text-center mb-0">Hasil akhir = <span class="highlight">0</span> (Asas-${toBase})</p>`);
+                        return;
+                    }
                     addStep(`<h5 class="text-center mb-3">Langkah 2: Tukar ${decimal} kepada Asas-${toBase}</h5>`);
                     
                     let quotient = decimal;
@@ -365,7 +400,8 @@
         });
     </script>
 
-    <footer class="text-center mt-4">
+    
+    <footer class="text-center mt-4" style="position: fixed; bottom: 0; width: 100%; background-color: #007bff; color: #ffffff; padding: 10px;">
         <small>Dibuat oleh <strong>CikguMie</strong></small>
     </footer>
 </body>
